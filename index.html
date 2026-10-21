@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>펭귄 슬라이드 | 잠실청소년센터</title>
+<meta name="game-version" content="20261021-touch-fix-2">
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.4/kakao.min.js"></script>
 <style>
 :root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#163b58}
@@ -48,10 +49,6 @@ canvas#game{display:block;width:100%;height:100%;touch-action:none;-webkit-tap-h
 .milestone{position:absolute;top:24%;left:5%;right:5%;text-align:center;pointer-events:none;opacity:0;transform:scale(.7);transition:opacity .2s,transform .25s;z-index:3;color:#fff;text-shadow:0 3px 12px #135b8e,0 2px 3px #135b8e;font-weight:900;font-size:31px}
 .milestone.show{opacity:1;transform:scale(1)}
 .milestone.fade-out{opacity:0;transform:scale(.94);transition:opacity .65s ease,transform .65s ease}
-.controls{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:14px;right:14px;display:flex;justify-content:space-between;z-index:6;pointer-events:none}
-.moveBtn{pointer-events:auto;touch-action:manipulation;width:84px;height:72px;border-radius:20px;border:4px solid #fff;background:linear-gradient(#3b9cf0,#1f6fd0);color:#fff;font-size:30px;font-weight:900;box-shadow:0 5px 0 #14509c,0 8px 14px #1a4f8a40;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-.moveBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #07547e}
-.controls.hidden{display:none}
 .milestone small{display:block;font-size:16px;margin-top:7px}
 .milestone.special{color:#ffe776;text-shadow:0 3px 14px #135b8e}
 .confetti{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
@@ -110,7 +107,7 @@ a.inlineLink{color:#137fc0;font-size:13px}
         <div class="sub">과연 센터의 기록을 깰 수 있을까요?</div>
       </div>
       <p>
-        👆 화면 왼쪽·오른쪽을 터치해 한 칸씩 이동<br>
+        👆 아래 화면 왼쪽 · 오른쪽 터치로 한 칸씩 이동<br>
         🧊 얼음 바위를 피해 최대한 멀리 이동<br>
         ⚡ 시간이 지날수록 최대 10배 빨라져요
       </p>
@@ -345,10 +342,10 @@ function move(dir) {
   }
 }
 
-// 게임 캔버스에서만 터치를 받아 한 번에 한 칸 이동합니다.
-// 홈 버튼과 다른 화면 UI는 캔버스 위 별도 요소이므로 터치 이동에서 제외됩니다.
+// 화면의 왼쪽 또는 오른쪽을 한 번 터치하면 해당 방향으로 한 칸만 이동합니다.
+// 다른 UI 위에서 누르는 경우에는 canvas 이벤트가 발생하지 않습니다.
 c.addEventListener('pointerdown', e => {
-  if (mode !== 'playing') return;
+  if (mode !== 'playing' || !$('exitOverlay').classList.contains('hidden')) return;
   e.preventDefault();
   const rect = c.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -694,7 +691,8 @@ function createConfetti(count=65) {
     box.appendChild(p);
   }
 
-  setTimeout(() => box.replaceChildren(), 3500);
+  const currentPieces = Array.from(box.children);
+  setTimeout(() => currentPieces.forEach(piece => piece.remove()), 3500);
 }
 
 /* ==========================================
@@ -703,7 +701,7 @@ function createConfetti(count=65) {
 
 function end() {
   mode = 'over';
-  finalScore = Math.floor(distance);
+  finalScore = Math.max(0, Math.floor(distance));
   $('finalDistance').textContent = finalScore.toLocaleString();
 
   const result = $('recordResult');
@@ -726,7 +724,8 @@ function end() {
 }
 
 function frame(t) {
-  const dt = Math.min((t-last)/1000 || 0,.045);
+  // start() 직후 첫 프레임의 타임스탬프가 더 이르면 음수 시간이 생길 수 있음
+  const dt = Math.max(0, Math.min((t-last)/1000 || 0,.045));
   last = t;
 
   if (mode === 'playing' && $('exitOverlay').classList.contains('hidden')) {
@@ -734,7 +733,7 @@ function frame(t) {
     const v = 210*speed;
 
     world += v*dt;
-    distance += v*dt/10;
+    distance = Math.max(0, distance + v*dt/10);
     spawn += dt;
 
     const interval = Math.max(.38,1.05/speed);
@@ -791,7 +790,7 @@ function frame(t) {
       milestoneUntil = 0;
     }
 
-    $('distance').textContent = Math.floor(distance).toLocaleString();
+    $('distance').textContent = Math.max(0, Math.floor(distance)).toLocaleString();
     $('speed').textContent = speed.toFixed(1);
   }
 
@@ -816,6 +815,8 @@ function finishHome() {
   $('exitOverlay').classList.add('hidden');
   $('milestone').classList.remove('show','fade-out');
   $('confetti').replaceChildren();
+  distance = 0; speed = 1; world = 0; lane = 1;
+  $('distance').textContent = '0'; $('speed').textContent = '1.0';
   show('startPanel');
 }
 
