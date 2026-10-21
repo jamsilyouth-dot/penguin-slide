@@ -209,7 +209,7 @@ const KAKAO_JS_KEY = 'f2f7bc0fd7b7599ecd27a7316a36eb43';
 const GAME_LINK = 'https://jamsilyouth-dot.github.io/penguin-slide/';
 
 // 1곳만 설정: Apps Script 배포 > 웹 앱 URL (/exec 전체)
-const API_URL = 'https://script.google.com/macros/s/AKfycbwQcWk-JY05MQmp25PgdkMjGWcpGlbI-xOlG0rxfkXqfXgfqydETMbmjFA88RY0pK4GjQ/exec';
+const API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
 
 const INSTAGRAM_URL = 'https://www.instagram.com/jamsilyc/';
 
@@ -802,15 +802,68 @@ function challengeText() {
   ].join('\n');
 }
 
-function initKakao(){
-  if(!window.Kakao||!Kakao.Share)throw new Error('카카오 SDK가 로드되지 않았습니다. Chrome 또는 Safari에서 게임을 열어 주세요.');
-  if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);
+// SDK를 페이지 시작 시 로드하고, 실패하면 공식 이전 버전으로 재시도합니다.
+// 친구 선택창은 사용자가 버튼을 누르는 순간 직접 실행합니다.
+let kakaoSdkPromise = null;
+let kakaoSdkError = '';
+
+function initializeKakao(){
+  if (!window.Kakao || !window.Kakao.Share ||
+      typeof window.Kakao.Share.sendDefault !== 'function') return false;
+  if (!window.Kakao.isInitialized()) window.Kakao.init(KAKO_JS_KEY_SAFE());
+  return true;
 }
+function KAKO_JS_KEY_SAFE(){ return KAKAO_JS_KEY; }
+function loadKakaoScript(url){
+  return new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    let settled=false;
+    const timer=setTimeout(()=>{
+      if(settled)return;
+      settled=true;script.remove();reject(new Error('SDK 로딩 시간 초과'));
+    },8000);
+    script.src=url;
+    script.async=true;
+    script.onload=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve();};
+    script.onerror=()=>{if(settled)return;settled=true;clearTimeout(timer);script.remove();reject(new Error('SDK 스크립트 요청 실패'));};
+    document.head.appendChild(script);
+  });
+}
+async function prepareKakao(){
+  if(initializeKakao())return true;
+  if(kakaoSdkPromise)return kakaoSdkPromise;
+  kakaoSdkPromise=(async()=>{
+    for(const url of [
+      'https://t1.kakaocdn.net/kakao_js_sdk/2.8.4/kakao.min.js',
+      'https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js'
+    ]){
+      try{
+        await loadKakaoScript(url);
+        if(initializeKakao())return true;
+        kakaoSdkError='SDK 파일은 로드됐지만 Kakao.Share를 찾지 못했습니다.';
+      }catch(e){kakaoSdkError=e.message||String(e);}
+    }
+    return false;
+  })();
+  try{return await kakaoSdkPromise;}
+  finally{kakaoSdkPromise=null;}
+}
+// 최초 로드 후에도 재시도해 일시적인 네트워크 오류에 대응합니다.
+if(!initializeKakao()){
+  window.addEventListener('load',()=>{prepareKakao().catch(console.error);},{once:true});
+}
+
 function shareChallenge(){
-  const status=$('shareStatus');status.textContent='';
+  const status=$('shareStatus');
+  status.textContent='';
+  // 사용자 클릭 직후 호출하여 모바일 팝업 제한을 최소화합니다.
+  if(!initializeKakao()){
+    status.textContent='카카오 SDK 초기화에 실패했습니다. 잠시 후 다시 눌러 주세요. ('+(kakaoSdkError||'SDK 확인 중')+')';
+    prepareKakao().catch(console.error);
+    return;
+  }
   try{
-    initKakao();
-    Kakao.Share.sendDefault({
+    window.Kakao.Share.sendDefault({
       objectType:'feed',
       content:{
         title:'🐧 잠실청소년센터의 기록을 넘어라!',
@@ -822,7 +875,7 @@ function shareChallenge(){
     });
   }catch(error){
     console.error('카카오톡 공유 실패:',error);
-    status.textContent='카카오톡 공유창을 열지 못했습니다: '+(error.message||String(error))+'\n카카오 디벨로퍼스의 JavaScript SDK 도메인에 https://jamsilyouth-dot.github.io 를 등록했는지 확인해 주세요.';
+    status.textContent='카카오톡 친구 선택창을 열지 못했습니다: '+(error.message||String(error));
   }
 }
 
