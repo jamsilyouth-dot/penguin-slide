@@ -1,27 +1,987 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>펭귄 슬라이드 | 잠실청소년센터</title><style>
-:root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#163b58}*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#d8f5ff,#7fc7e9);min-height:100dvh;display:flex;justify-content:center;align-items:center}.shell{width:min(100%,470px);height:100dvh;max-height:930px;min-height:580px;position:relative;overflow:hidden;background:#a5def4;box-shadow:0 8px 45px #16527744}canvas{display:block;width:100%;height:100%;touch-action:none}.homeBtn{position:absolute;top:calc(env(safe-area-inset-top, 12px) + 62px);left:15px;z-index:5;border:2px solid white;background:#ffffffec;color:#17628b;border-radius:18px;padding:9px 13px;font-size:14px;font-weight:800;box-shadow:0 4px 12px #26749b25;cursor:pointer}.rankrow{gap:7px;align-items:center}.rankrow .identity{flex:1;text-align:left;min-width:0;font-size:13px}.rankrow .meters{white-space:nowrap}.hud{position:absolute;top:env(safe-area-inset-top,12px);left:15px;right:15px;display:flex;justify-content:space-between;pointer-events:none}.pill{background:#ffffffdf;border:2px solid #fff;border-radius:22px;padding:8px 14px;box-shadow:0 4px 12px #26749b25;font-weight:800}.pill small{display:block;font-size:10px;color:#658ba0}.panel{position:absolute;inset:0;background:#07375269;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}.panel.hidden{display:none}.card{width:100%;max-height:96%;overflow:auto;background:#faffff;border:3px solid #fff;border-radius:27px;padding:24px 20px;box-shadow:0 15px 55px #1a597366;text-align:center}.emoji{font-size:55px;line-height:1.1}.card h1{margin:9px 0;font-size:29px;color:#17628b;letter-spacing:-1px}.card p{font-size:14px;color:#507b91;line-height:1.65}.btn{border:0;border-radius:16px;background:#137fc0;color:white;padding:14px 18px;font-size:16px;font-weight:800;width:100%;cursor:pointer;margin-top:10px;box-shadow:0 4px 0 #0b5c90}.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #0b5c90}.btn.secondary{background:#e1f3fb;color:#1a6389;box-shadow:0 4px 0 #bddde9}.score{font-size:43px;font-weight:900;color:#0c87c8}.sub{font-size:12px;color:#66889b}.field{text-align:left;margin:12px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}.field input{width:100%;border:2px solid #d1e7f0;border-radius:12px;padding:12px;font-size:16px}.check{text-align:left;font-size:12px;line-height:1.6;display:flex;gap:8px;margin:14px 0}.check input{width:18px;flex-shrink:0}.rankrow{display:flex;justify-content:space-between;padding:9px 10px;border-bottom:1px solid #e1eef5;font-size:14px}.rankrow span:last-child{font-weight:800}.topbar{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;pointer-events:none}.tip{background:#ffffffc9;border-radius:22px;padding:8px 14px;font-size:12px;font-weight:700}.status{font-size:12px;min-height:20px;color:#b34747}.tiny{font-size:11px!important;text-align:left}.hidden{display:none!important} .milestone{position:absolute;top:25%;left:7%;right:7%;text-align:center;pointer-events:none;opacity:0;transform:scale(.75);transition:opacity .2s,transform .25s;z-index:3;color:#fff;text-shadow:0 3px 12px #135b8e,0 2px 3px #135b8e;font-weight:900;font-size:34px}.milestone.show{opacity:1;transform:scale(1)}.milestone small{display:block;font-size:17px;margin-top:5px} .exitOverlay{position:absolute;inset:0;z-index:20;background:#092d4d9c;display:flex;align-items:center;justify-content:center;padding:24px}.exitBox{background:white;border-radius:24px;padding:25px 20px;text-align:center;width:100%;max-width:350px;box-shadow:0 15px 40px #173c5b55}.exitBox h2{margin:0 0 10px}.exitBox p{line-height:1.6;color:#57768c}.exitActions{display:flex;gap:10px}.exitActions .btn{flex:1} </style></head><body><div class="shell"><canvas id="game"></canvas><div class="milestone" id="milestone" aria-live="polite"></div><div class="hud"><div class="pill"><small>이동 거리</small><span id="distance">0</span> m</div><div class="pill"><small>속도</small><span id="speed">1.0</span> x</div></div><button class="homeBtn hidden" id="homeBtn" type="button">⌂ 홈</button><div class="exitOverlay hidden" id="exitOverlay" role="dialog" aria-modal="true" aria-labelledby="exitTitle"><div class="exitBox"><h2 id="exitTitle">🐧 게임을 종료할까요?</h2><p>지금 나가면 현재 이동 기록은 저장되지 않아요.</p><div class="exitActions"><button class="btn secondary" id="stayBtn" type="button">계속하기</button><button class="btn" id="exitBtn" type="button">종료하고 홈으로</button></div></div></div><div class="topbar" id="tip"><div class="tip">← 좌우 스와이프 · 원하는 레인 터치 →</div></div>
-<div class="panel" id="startPanel"><div class="card"><div class="emoji">🐧❄️</div><h1>펭귄 슬라이드</h1><p>잠실청소년센터 겨울 챌린지<br>장애물을 피해 가장 멀리 미끄러져 보세요!</p><p>👆 좌우 스와이프로 3개 레인 이동<br>🧊 얼음 바위를 피해 최대한 멀리 이동하세요<br>⚡ 시간이 지날수록 속도가 빨라져요</p><button class="btn" id="startBtn">게임 시작</button><button class="btn secondary" id="showRanks">🏆 랭킹 보기</button><p class="sub">반복 도전 가능 · 최고 기록 TOP 5 선발</p></div></div>
-<div class="panel hidden" id="overPanel"><div class="card"><div class="emoji">☃️</div><h1>게임 종료!</h1><div class="score"><span id="finalDistance">0</span>m</div><p>가장 멀리 이동한 상위 5명이 우승해요!</p><button class="btn" id="registerBtn">🏆 랭킹 등록</button><button class="btn secondary" id="retryBtn">다시 도전</button><button class="btn secondary" id="overRanks">랭킹 보기</button><button class="btn secondary" id="overHome">⌂ 홈으로</button></div></div>
-<div class="panel hidden" id="registerPanel"><div class="card"><h1>🏆 기록 등록</h1><p><span id="registerDistance"></span>m 기록을 등록합니다.</p><form id="registerForm"><div class="field"><label for="name">이름</label><input id="name" maxlength="20" autocomplete="name" placeholder="실명 입력" required></div><div class="field"><label for="phone">전화번호</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-1234-5678" required></div><div class="check"><input type="checkbox" id="consent" required><label for="consent">개인정보 수집·이용에 동의합니다. 수집항목: 이름, 전화번호, 게임 점수 및 등록시각. 목적: 순위 관리, 당첨자 확인 및 연락. 보유기간은 운영자가 별도 공지한 기간을 따릅니다. 동의를 거부할 수 있으나 랭킹 등록은 제한됩니다. 공개 랭킹에는 마스킹된 이름, 전화번호 뒷자리 4자리, 점수가 표시됩니다.</label></div><p class="tiny">※ 정식 운영 전 담당자가 실제 보유기간, 개인정보 처리 안내, 운영 규칙을 확정해야 합니다.</p><button class="btn" type="submit" id="submitBtn">기록 제출</button></form><div class="status" id="registerStatus"></div><button class="btn secondary" id="backOver">돌아가기</button><button class="btn secondary" id="registerHome">⌂ 홈으로</button></div></div>
-<div class="panel hidden" id="rankPanel"><div class="card"><div class="emoji">🏆</div><h1>실시간 TOP 10</h1><p id="rankMode" class="sub"></p><div id="rankList"></div><button class="btn secondary" id="refreshRanks">새로고침</button><button class="btn" id="closeRanks">돌아가기</button></div></div></div>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>펭귄 슬라이드 | 잠실청소년센터</title>
+<script defer src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.4/kakao.min.js"></script>
+<style>
+:root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#163b58}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(160deg,#d8f5ff,#7fc7e9);min-height:100dvh;display:flex;justify-content:center;align-items:center}
+.shell{width:min(100%,470px);height:100dvh;max-height:930px;min-height:580px;position:relative;overflow:hidden;background:#a5def4;box-shadow:0 8px 45px #16527744}
+canvas#game{display:block;width:100%;height:100%;touch-action:none}
+.hud{position:absolute;top:env(safe-area-inset-top,12px);left:15px;right:15px;display:flex;justify-content:space-between;pointer-events:none}
+.pill{background:#ffffffdf;border:2px solid #fff;border-radius:22px;padding:8px 14px;box-shadow:0 4px 12px #26749b25;font-weight:800}
+.pill small{display:block;font-size:10px;color:#658ba0}
+.homeBtn{position:absolute;top:calc(env(safe-area-inset-top,12px) + 62px);left:15px;z-index:5;border:2px solid white;background:#ffffffec;color:#17628b;border-radius:18px;padding:9px 13px;font-size:14px;font-weight:800;cursor:pointer}
+.panel{position:absolute;inset:0;background:#07375269;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.panel.hidden,.hidden{display:none!important}
+.card{width:100%;max-height:96%;overflow:auto;background:#faffff;border:3px solid #fff;border-radius:27px;padding:22px 18px;box-shadow:0 15px 55px #1a597366;text-align:center}
+.emoji{font-size:50px;line-height:1.1}
+.card h1{margin:9px 0;font-size:27px;color:#17628b;letter-spacing:-1px}
+.card p{font-size:14px;color:#507b91;line-height:1.65}
+.btn{border:0;border-radius:16px;background:#137fc0;color:white;padding:14px 15px;font-size:15px;font-weight:800;width:100%;cursor:pointer;margin-top:9px;box-shadow:0 4px 0 #0b5c90}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn.secondary{background:#e1f3fb;color:#1a6389;box-shadow:0 4px 0 #bddde9}
+.btn.kakao{background:#fee500;color:#392b1b;box-shadow:0 4px 0 #d9bf00}
+.btn.instagram{background:linear-gradient(90deg,#bc2a8d,#e95950);box-shadow:0 4px 0 #a92d67}
+.score{font-size:43px;font-weight:900;color:#0c87c8}
+.sub{font-size:12px!important;color:#66889b!important}
+.recordBox{background:#e5f5ff;border:2px solid #c8eafa;border-radius:18px;padding:14px;margin:14px 0}
+.recordBox .number{font-size:34px;font-weight:900;color:#087fc0}
+.resultBox{padding:12px;border-radius:14px;background:#e7f8ee;color:#23734c;font-weight:800;margin:12px 0}
+.resultBox.fail{background:#edf5fc;color:#507b91}
+.field{text-align:left;margin:12px 0}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
+.field input{width:100%;border:2px solid #d1e7f0;border-radius:12px;padding:12px;font-size:16px}
+.check{text-align:left;font-size:12px;line-height:1.6;display:flex;gap:8px;margin:14px 0}
+.check input{width:18px;flex-shrink:0}
+.rankrow{display:flex;gap:7px;align-items:center;justify-content:space-between;padding:9px 6px;border-bottom:1px solid #e1eef5;font-size:13px}
+.rankrow .identity{flex:1;text-align:left;min-width:0}
+.rankrow .meters{font-weight:800;white-space:nowrap}
+.status{font-size:12px;min-height:20px;color:#b34747;line-height:1.5;overflow-wrap:anywhere}
+.tiny{font-size:11px!important;text-align:left}
+.topbar{position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;pointer-events:none}
+.tip{background:#ffffffc9;border-radius:22px;padding:8px 14px;font-size:12px;font-weight:700}
+.milestone{position:absolute;top:24%;left:5%;right:5%;text-align:center;pointer-events:none;opacity:0;transform:scale(.7);transition:opacity .2s,transform .25s;z-index:3;color:#fff;text-shadow:0 3px 12px #135b8e,0 2px 3px #135b8e;font-weight:900;font-size:31px}
+.milestone.show{opacity:1;transform:scale(1)}
+.milestone small{display:block;font-size:16px;margin-top:7px}
+.milestone.special{color:#ffe776;text-shadow:0 3px 14px #135b8e}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.confetti i{position:absolute;top:-30px;width:9px;height:17px;animation:fall 2.5s linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}
+.exitOverlay{position:absolute;inset:0;z-index:20;background:#092d4d9c;display:flex;align-items:center;justify-content:center;padding:24px}
+.exitBox{background:white;border-radius:24px;padding:25px 20px;text-align:center;width:100%;max-width:350px}
+.exitBox p{line-height:1.6;color:#57768c}
+.exitActions{display:flex;gap:10px}
+.exitActions .btn{flex:1}
+.storyPreview{width:100%;max-width:210px;aspect-ratio:9/16;object-fit:contain;border-radius:12px;border:2px solid #d1e7f0;background:#eaf8ff}
+a.inlineLink{color:#137fc0;font-size:13px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <canvas id="game"></canvas>
+  <div id="confetti" class="confetti"></div>
+  <div id="milestone" class="milestone" aria-live="polite"></div>
+
+  <div class="hud">
+    <div class="pill"><small>이동 거리</small><span id="distance">0</span> m</div>
+    <div class="pill"><small>속도</small><span id="speed">1.0</span> x</div>
+  </div>
+
+  <button id="homeBtn" class="homeBtn hidden" type="button">⌂ 홈</button>
+
+  <div id="exitOverlay" class="exitOverlay hidden">
+    <div class="exitBox">
+      <h2>🐧 게임을 종료할까요?</h2>
+      <p>지금 나가면 현재 이동 기록은 저장되지 않아요.</p>
+      <div class="exitActions">
+        <button id="stayBtn" class="btn secondary">계속하기</button>
+        <button id="exitBtn" class="btn">종료하고 홈으로</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tip" class="topbar">
+    <div class="tip">← 좌우 스와이프 · 원하는 레인 터치 →</div>
+  </div>
+
+  <div id="startPanel" class="panel">
+    <div class="card">
+      <div class="emoji">🐧❄️</div>
+      <p class="sub">잠실청소년센터 5차 홍보이벤트</p>
+      <h1>펭귄 슬라이드</h1>
+      <h2 style="color:#17628b;font-size:19px;margin:10px 0">
+        잠실청소년센터의<br>기록을 넘어라!
+      </h2>
+      <div class="recordBox">
+        <div class="sub">잠실청소년센터 공식 기록</div>
+        <div class="number">1,500m</div>
+        <div class="sub">과연 센터의 기록을 깰 수 있을까요?</div>
+      </div>
+      <p>
+        👆 좌우 스와이프로 3개 레인 이동<br>
+        🧊 얼음 바위를 피해 최대한 멀리 이동<br>
+        ⚡ 시간이 지날수록 최대 10배 빨라져요
+      </p>
+      <button id="startBtn" class="btn">🎮 도전 시작!</button>
+      <button id="showRanks" class="btn secondary">🏆 실시간 TOP 10</button>
+      <p class="sub">무제한 도전 · 개인별 최고 기록 · 최종 TOP 5 선정</p>
+    </div>
+  </div>
+
+  <div id="overPanel" class="panel hidden">
+    <div class="card">
+      <div class="emoji">☃️</div>
+      <h1>게임 종료!</h1>
+      <p class="sub">나의 이동 거리</p>
+      <div class="score"><span id="finalDistance">0</span>m</div>
+      <div id="recordResult" class="resultBox"></div>
+      <p>내 기록을 등록하고 친구에게 도전장을 보내보세요!</p>
+      <button id="registerBtn" class="btn">🏆 기록 등록하기</button>
+      <button id="kakaoBtn" class="btn kakao">💬 카카오톡으로 도전장 보내기</button>
+      <button id="instagramBtn" class="btn instagram">📸 인스타그램 스토리 공유하기</button>
+      <div id="shareStatus" class="status"></div>
+      <button id="retryBtn" class="btn secondary">🔄 다시 도전</button>
+      <button id="overRanks" class="btn secondary">랭킹 보기</button>
+      <button id="overHome" class="btn secondary">⌂ 홈으로</button>
+    </div>
+  </div>
+
+  <div id="registerPanel" class="panel hidden">
+    <div class="card">
+      <h1>🏆 기록 등록</h1>
+      <p><span id="registerDistance"></span>m 기록을 등록합니다.</p>
+      <form id="registerForm">
+        <div class="field">
+          <label for="name">이름</label>
+          <input id="name" maxlength="20" autocomplete="name" placeholder="실명 입력" required>
+        </div>
+        <div class="field">
+          <label for="phone">전화번호</label>
+          <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010" required>
+        </div>
+        <div class="check">
+          <input type="checkbox" id="consent" required>
+          <label for="consent">
+            개인정보 수집·이용에 동의합니다.
+            수집항목: 이름, 전화번호, 게임 점수 및 등록시각.
+            목적: 순위 관리, 당첨자 확인 및 연락.
+            보유기간은 운영자가 별도 공지한 기간을 따릅니다.
+            동의를 거부할 수 있으나 기록 등록은 제한됩니다.
+            공개 랭킹에는 마스킹된 이름, 전화번호 및 점수가 표시됩니다.
+          </label>
+        </div>
+        <p class="tiny">
+          ※ 정식 운영 전 개인정보 보유기간 및 처리 안내를 확정해 주세요.
+        </p>
+        <button id="submitBtn" class="btn" type="submit">기록 제출</button>
+      </form>
+      <div id="registerStatus" class="status"></div>
+      <button id="backOver" class="btn secondary">돌아가기</button>
+      <button id="registerHome" class="btn secondary">⌂ 홈으로</button>
+    </div>
+  </div>
+
+  <div id="rankPanel" class="panel hidden">
+    <div class="card">
+      <div class="emoji">🏆</div>
+      <h1>실시간 TOP 10</h1>
+      <p class="sub">잠실청소년센터 펭귄 슬라이드</p>
+      <div id="rankList"></div>
+      <button id="refreshRanks" class="btn secondary">새로고침</button>
+      <button id="closeRanks" class="btn">돌아가기</button>
+    </div>
+  </div>
+
+  <div id="storyPanel" class="panel hidden">
+    <div class="card">
+      <h1>📸 스토리 공유</h1>
+      <p>내 기록이 담긴 JPG 이미지를 저장하고<br>인스타그램 스토리에 올려보세요!</p>
+      <img id="storyPreview" class="storyPreview" alt="스토리 이미지 미리보기">
+      <button id="saveStoryBtn" class="btn">📥 JPG 이미지 저장</button>
+      <button id="openInstagramBtn" class="btn instagram">📸 인스타그램 열기</button>
+      <p class="sub">저장된 이미지를 스토리에서 선택해 주세요.<br>게시 여부는 직접 결정할 수 있어요.</p>
+      <p class="sub">스토리에서 @jamsilyc 계정을 언급해 주세요!</p>
+      <div id="storyStatus" class="status"></div>
+      <button id="backStory" class="btn secondary">돌아가기</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// 정식 운영 시 배포한 Google Apps Script 웹앱 URL을 아래에 입력하세요.
-const API_URL='apps-script'; // 예: https://script.google.com/macros/s/.../exec
-const c=document.getElementById('game'),ctx=c.getContext('2d');let W=400,H=750,dpr=1,mode='start',lane=1,objects=[],snow=[],distance=0,speed=1,last=0,spawn=0,world=0,finalScore=0,previousPanel='startPanel',rankTimer=null,nextMilestone=1000,milestoneUntil=0;const $=id=>document.getElementById(id);function resize(){let r=c.getBoundingClientRect();W=r.width;H=r.height;dpr=Math.min(devicePixelRatio||1,2);c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);snow=Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,r:1+Math.random()*2.8,v:15+Math.random()*32}))}addEventListener('resize',resize);resize();function show(id){['startPanel','overPanel','registerPanel','rankPanel'].forEach(k=>$(k).classList.toggle('hidden',k!==id));$('tip').classList.toggle('hidden',id!=='');$('homeBtn').classList.toggle('hidden',id!=='' );}function start(){lane=1;objects=[];distance=0;nextMilestone=1000;milestoneUntil=0;$('milestone').classList.remove('show');speed=1;spawn=0;world=0;mode='playing';show('');last=performance.now();}function move(dir){if(mode==='playing')lane=Math.max(0,Math.min(2,lane+dir))}let sx=0,sy=0,gestureMoved=false;function selectLane(clientX){if(mode!=='playing')return;const rect=c.getBoundingClientRect(),r=road(),x=clientX-rect.left;lane=Math.max(0,Math.min(2,Math.floor((x-r.l)/r.lw)))}c.addEventListener('pointerdown',e=>{if(mode!=='playing')return;sx=e.clientX;sy=e.clientY;gestureMoved=false;if(c.setPointerCapture)c.setPointerCapture(e.pointerId)});c.addEventListener('pointerup',e=>{if(mode!=='playing')return;let dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>25&&Math.abs(dx)>Math.abs(dy)){move(dx>0?1:-1)}else if(Math.abs(dx)<20&&Math.abs(dy)<20){selectLane(e.clientX)}});c.addEventListener('pointercancel',()=>{gestureMoved=false});addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key==='a'?-1:1)}});function road(){let rw=W*.78;return {l:(W-rw)/2,w:rw,lw:rw/3}}function penguin(x,y,s=1){
-  // Render the platform's polished penguin emoji instead of a hand-drawn figure.
-  const size=Math.min(72,Math.max(48,64*s));
-  const bob=mode==='playing'?Math.sin(world/38)*2:0;
-  ctx.save();ctx.translate(x,y+bob);
-  ctx.shadowColor='rgba(15,55,90,.26)';ctx.shadowBlur=12;ctx.shadowOffsetY=5;
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.font=`${size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+'use strict';
+
+/* ==========================================
+   기본 설정
+========================================== */
+
+const CENTER_RECORD = 1500;
+
+// 카카오 디벨로퍼스에서 발급받은 JavaScript SDK 키 입력
+const KAKAO_JS_KEY = 'f2f7bc0fd7b7599ecd27a7316a36eb43';
+
+// 친구에게 공유할 실제 게임 주소
+// 이 주소에서 최신 게임과 기록 등록이 작동하는지 확인해야 합니다.
+const GAME_LINK = 'https://jamsilyouth-dot.github.io/penguin-slide/';
+
+// 1곳만 설정: Apps Script 배포 > 웹 앱 URL (/exec 전체)
+const API_URL = 'https://script.google.com/macros/s/AKfycbwQcWk-JY05MQmp25PgdkMjGWcpGlbI-xOlG0rxfkXqfXgfqydETMbmjFA88RY0pK4GjQ/exec';
+
+const INSTAGRAM_URL = 'https://www.instagram.com/jamsilyc/';
+
+// 카카오톡 카드에 표시할 공개 접근 가능한 홍보 이미지
+// 정식 운영 전 실제 이미지 주소로 교체 권장
+const SHARE_IMAGE_URL = 'https://jamsilyouth-dot.github.io/penguin-slide/share-card.png';
+
+const $ = id => document.getElementById(id);
+const c = $('game');
+const ctx = c.getContext('2d');
+
+let W = 400, H = 750, dpr = 1;
+let mode = 'start';
+let lane = 1;
+let objects = [];
+let snow = [];
+let distance = 0;
+let speed = 1;
+let last = 0;
+let spawn = 0;
+let world = 0;
+let finalScore = 0;
+let previousPanel = 'startPanel';
+let rankTimer = null;
+let nextMilestone = 1000;
+let milestoneUntil = 0;
+let centerRecordPassed = false;
+let storyDataURL = '';
+
+/* ==========================================
+   화면 제어
+========================================== */
+
+const PANELS = [
+  'startPanel','overPanel','registerPanel',
+  'rankPanel','storyPanel'
+];
+
+function show(id) {
+  PANELS.forEach(key => {
+    $(key).classList.toggle('hidden', key !== id);
+  });
+  $('tip').classList.toggle('hidden', id !== '');
+  $('homeBtn').classList.toggle('hidden', id !== '');
+}
+
+function resize() {
+  const r = c.getBoundingClientRect();
+  W = r.width;
+  H = r.height;
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  c.width = Math.round(W * dpr);
+  c.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  snow = Array.from({length:50}, () => ({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:1+Math.random()*2.8,
+    v:15+Math.random()*32
+  }));
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+/* ==========================================
+   게임 시작 및 조작
+========================================== */
+
+function start() {
+  lane = 1;
+  objects = [];
+  distance = 0;
+  speed = 1;
+  spawn = 0;
+  world = 0;
+  nextMilestone = 1000;
+  milestoneUntil = 0;
+  centerRecordPassed = false;
+  $('milestone').classList.remove('show','special');
+  $('confetti').replaceChildren();
+  $('distance').textContent = '0';
+  $('speed').textContent = '1.0';
+  $('shareStatus').textContent = '';
+  mode = 'playing';
+  show('');
+  last = performance.now();
+}
+
+function move(dir) {
+  if (mode === 'playing') {
+    lane = Math.max(0, Math.min(2, lane + dir));
+  }
+}
+
+function road() {
+  const rw = W * .78;
+  return {l:(W-rw)/2, w:rw, lw:rw/3};
+}
+
+function selectLane(clientX) {
+  if (mode !== 'playing') return;
+  const rect = c.getBoundingClientRect();
+  const r = road();
+  const x = clientX - rect.left;
+  lane = Math.max(0, Math.min(2, Math.floor((x-r.l)/r.lw)));
+}
+
+let sx = 0, sy = 0;
+
+c.addEventListener('pointerdown', e => {
+  if (mode !== 'playing') return;
+  sx = e.clientX;
+  sy = e.clientY;
+  if (c.setPointerCapture) c.setPointerCapture(e.pointerId);
+});
+
+c.addEventListener('pointerup', e => {
+  if (mode !== 'playing') return;
+  const dx = e.clientX - sx;
+  const dy = e.clientY - sy;
+
+  if (Math.abs(dx) > 25 && Math.abs(dx) > Math.abs(dy)) {
+    move(dx > 0 ? 1 : -1);
+  } else if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+    selectLane(e.clientX);
+  }
+});
+
+window.addEventListener('keydown', e => {
+  if (['ArrowLeft','ArrowRight','a','d'].includes(e.key)) {
+    e.preventDefault();
+    move(e.key === 'ArrowLeft' || e.key === 'a' ? -1 : 1);
+  }
+});
+
+/* ==========================================
+   게임 그리기
+========================================== */
+
+function penguin(x,y,s=1) {
+  const size = Math.min(72, Math.max(48, 64*s));
+  const bob = mode === 'playing' ? Math.sin(world/38)*2 : 0;
+  ctx.save();
+  ctx.translate(x,y+bob);
+  ctx.shadowColor = 'rgba(15,55,90,.26)';
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetY = 5;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
   ctx.fillText('🐧',0,0);
   ctx.restore();
 }
-function draw(){let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#69bee7');sky.addColorStop(1,'#e6f9ff');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);ctx.fillStyle='#f4fcff';for(let i=0;i<10;i++){let y=((i*150+world*.18)%(H+200))-100;let x=i%2===0?W*.035:W*.965;ctx.beginPath();ctx.arc(x,y,28+i%3*7,0,7);ctx.fill();ctx.fillStyle='#358da0';ctx.beginPath();ctx.moveTo(x,y-48);ctx.lineTo(x-22,y+5);ctx.lineTo(x+22,y+5);ctx.fill();ctx.fillStyle='#f4fcff'}let r=road();ctx.fillStyle='#eaf9ff';ctx.fillRect(r.l,0,r.w,H);ctx.fillStyle='#c5e8f6';ctx.fillRect(r.l+5,0,r.w-10,H);ctx.strokeStyle='#faffff';ctx.lineWidth=3;ctx.setLineDash([25,22]);ctx.lineDashOffset=-world%47;for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(r.l+r.lw*i,0);ctx.lineTo(r.l+r.lw*i,H);ctx.stroke()}ctx.setLineDash([]);for(let s of snow){ctx.fillStyle='#fff9';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill()}for(let o of objects){let x=r.l+r.lw*(o.lane+.5),y=o.y;ctx.save();ctx.translate(x,y);{ctx.fillStyle='#6d93aa';ctx.beginPath();ctx.moveTo(-24,20);ctx.lineTo(-20,-10);ctx.lineTo(-7,-24);ctx.lineTo(17,-18);ctx.lineTo(25,20);ctx.closePath();ctx.fill();ctx.fillStyle='#e4f7ff';ctx.beginPath();ctx.moveTo(-20,-10);ctx.lineTo(-7,-24);ctx.lineTo(17,-18);ctx.lineTo(7,-5);ctx.lineTo(-3,-11);ctx.closePath();ctx.fill()}ctx.restore()}penguin(r.l+r.lw*(lane+.5),H*.79,Math.min(1,W/390));}
-function end(){mode='over';finalScore=Math.floor(distance);$('finalDistance').textContent=finalScore.toLocaleString();show('overPanel')}function frame(t){let dt=Math.min((t-last)/1000||0,.045);last=t;if(mode==='playing'&&$('exitOverlay').classList.contains('hidden')){speed=Math.min(10,1+distance/750);let v=210*speed;world+=v*dt;distance+=v*dt/10;spawn+=dt;let interval=Math.max(.38,1.05/speed);if(spawn>=interval){spawn=0;let blocked=Math.floor(Math.random()*3);objects.push({lane:blocked,y:-40,type:'rock',handled:false});}for(let o of objects){let old=o.y;o.y+=v*dt;if(!o.handled&&old<H*.79+25&&o.y>=H*.79-25){o.handled=true;if(o.lane===lane){end();break}}}objects=objects.filter(o=>o.y<H+55);if(distance>=nextMilestone){$('milestone').innerHTML='❄️ '+nextMilestone.toLocaleString()+'m 돌파!<small>계속 달려보세요! 🐧</small>';$('milestone').classList.add('show');milestoneUntil=t+1800;nextMilestone+=1000}if(milestoneUntil&&t>milestoneUntil){$('milestone').classList.remove('show');milestoneUntil=0}$('distance').textContent=Math.floor(distance).toLocaleString();$('speed').textContent=speed.toFixed(1)}for(let s of snow){s.y+=s.v*dt;if(s.y>H){s.y=-5;s.x=Math.random()*W}}draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
-function finishHome(){mode='start';objects=[];clearInterval(rankTimer);$('exitOverlay').classList.add('hidden');$('milestone').classList.remove('show');show('startPanel')}function goHome(){if(mode==='playing'){$('exitOverlay').classList.remove('hidden');return}finishHome()}$('stayBtn').onclick=()=>{$('exitOverlay').classList.add('hidden')};$('exitBtn').onclick=finishHome; $('homeBtn').onclick=goHome;$('overHome').onclick=goHome;$('registerHome').onclick=goHome;$('startBtn').onclick=start;$('retryBtn').onclick=start;$('registerBtn').onclick=()=>{$('registerDistance').textContent=finalScore;show('registerPanel')};$('backOver').onclick=()=>show('overPanel');$('showRanks').onclick=()=>openRanks('startPanel');$('overRanks').onclick=()=>openRanks('overPanel');$('closeRanks').onclick=()=>{clearInterval(rankTimer);show(previousPanel)};$('refreshRanks').onclick=loadRanks;function mask(s){s=String(s||'').trim();return s.length<=1?'*':s.length===2?s[0]+'*':s[0]+'*'.repeat(s.length-2)+s[s.length-1]}function maskPhone(s){let digits=String(s||'').replace(/\D/g,'');return digits.length>=7?digits.slice(0,3)+'-****-'+digits.slice(-4):'***-****-****'}function localRows(){try{return JSON.parse(localStorage.getItem('penguinRanks')||'[]')}catch{return []}}function callServer(method,...args){return new Promise((resolve,reject)=>{if(!window.google||!google.script||!google.script.run){reject(new Error('Google Apps Script 게임 주소에서 접속해 주세요.'));return;}google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(new Error(e.message||String(e))))[method](...args);});}
-async function getRanking(){return await callServer('getPublicRanking');}
-async function submitRecord(name,phone,distance){return await callServer('submitGameRecord',{name,phone,distance,consent:true});}
-async function loadRanks(){let list=$('rankList');list.textContent='랭킹 불러오는 중...';try{let rows=API_URL?(await getRanking()).map(x=>({...x,score:x.distance})):(()=>{const best=new Map();for(const x of localRows()){const k=String(x.phone||'').replace(/\D/g,'');const prev=best.get(k);if(!prev||x.score>prev.score)best.set(k,x)}return [...best.values()].sort((a,b)=>b.score-a.score||a.at.localeCompare(b.at)).slice(0,10).map(x=>({name:mask(x.name),phone:maskPhone(x.phone),score:x.score}))})();list.replaceChildren();if(!rows.length){list.textContent='아직 등록된 기록이 없어요!';return}rows.forEach((r,i)=>{let el=document.createElement('div');el.className='rankrow';let left=document.createElement('span');left.className='identity';left.textContent=(i+1)+'위  '+r.name+'  ·  '+(r.phone||'***-****-****');let right=document.createElement('span');right.className='meters';right.textContent=Number(r.score).toLocaleString()+'m';el.append(left,right);list.append(el)})}catch(e){list.textContent='랭킹을 불러오지 못했습니다: '+e.message}}function openRanks(from){previousPanel=from;show('rankPanel');$('rankMode').textContent=API_URL?'서버 연동 TOP 10 · 10초마다 갱신':'시제품 TOP 10 · 현재 기기에만 저장된 기록';loadRanks();clearInterval(rankTimer);rankTimer=setInterval(()=>{if(!$('rankPanel').classList.contains('hidden'))loadRanks()},10000)}$('registerForm').onsubmit=async e=>{e.preventDefault();let name=$('name').value.trim(),phone=$('phone').value.replace(/\D/g,'');if(!name||!/^01[016789]\d{7,8}$/.test(phone)||!$('consent').checked){$('registerStatus').textContent='이름, 올바른 휴대전화번호, 동의 여부를 확인해 주세요.';return}let btn=$('submitBtn');btn.disabled=true;$('registerStatus').textContent='등록 중...';try{if(API_URL){await submitRecord(name,phone,finalScore)}else{let rows=localRows();rows.push({name,phone,score:finalScore,at:new Date().toISOString()});localStorage.setItem('penguinRanks',JSON.stringify(rows))}$('registerStatus').textContent='';$('registerForm').reset();openRanks('overPanel')}catch(err){$('registerStatus').textContent='등록 실패: '+err.message}finally{btn.disabled=false}};
-</script></body></html>
+
+function draw() {
+  const sky = ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#69bee7');
+  sky.addColorStop(1,'#e6f9ff');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle = '#f4fcff';
+
+  for (let i=0;i<10;i++) {
+    const y = ((i*150+world*.18)%(H+200))-100;
+    const x = i%2===0 ? W*.035 : W*.965;
+
+    ctx.beginPath();
+    ctx.arc(x,y,28+i%3*7,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = '#358da0';
+    ctx.beginPath();
+    ctx.moveTo(x,y-48);
+    ctx.lineTo(x-22,y+5);
+    ctx.lineTo(x+22,y+5);
+    ctx.fill();
+    ctx.fillStyle = '#f4fcff';
+  }
+
+  const r = road();
+  ctx.fillStyle = '#eaf9ff';
+  ctx.fillRect(r.l,0,r.w,H);
+  ctx.fillStyle = '#c5e8f6';
+  ctx.fillRect(r.l+5,0,r.w-10,H);
+
+  ctx.strokeStyle = '#faffff';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([25,22]);
+  ctx.lineDashOffset = -world%47;
+
+  for (let i=1;i<3;i++) {
+    ctx.beginPath();
+    ctx.moveTo(r.l+r.lw*i,0);
+    ctx.lineTo(r.l+r.lw*i,H);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  for (const s of snow) {
+    ctx.fillStyle = '#fff9';
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  for (const o of objects) {
+    const x = r.l+r.lw*(o.lane+.5);
+    const y = o.y;
+
+    ctx.save();
+    ctx.translate(x,y);
+
+    ctx.fillStyle = '#6d93aa';
+    ctx.beginPath();
+    ctx.moveTo(-24,20);
+    ctx.lineTo(-20,-10);
+    ctx.lineTo(-7,-24);
+    ctx.lineTo(17,-18);
+    ctx.lineTo(25,20);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#e4f7ff';
+    ctx.beginPath();
+    ctx.moveTo(-20,-10);
+    ctx.lineTo(-7,-24);
+    ctx.lineTo(17,-18);
+    ctx.lineTo(7,-5);
+    ctx.lineTo(-3,-11);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  penguin(r.l+r.lw*(lane+.5),H*.79,Math.min(1,W/390));
+}
+
+/* ==========================================
+   기록 돌파 이펙트
+========================================== */
+
+function milestone(text,subtitle,special=false) {
+  const el = $('milestone');
+  el.replaceChildren();
+
+  const title = document.createElement('div');
+  title.textContent = text;
+
+  const sub = document.createElement('small');
+  sub.textContent = subtitle;
+
+  el.append(title,sub);
+  el.classList.toggle('special',special);
+  el.classList.add('show');
+
+  milestoneUntil = performance.now() + (special ? 2400 : 1800);
+
+  if (special) createConfetti();
+}
+
+function createConfetti() {
+  const box = $('confetti');
+  box.replaceChildren();
+  const colors = ['#ffe66d','#ff6b9b','#fff','#5de3ff','#85ffb5'];
+
+  for (let i=0;i<65;i++) {
+    const p = document.createElement('i');
+    p.style.left = Math.random()*100+'%';
+    p.style.background = colors[i%colors.length];
+    p.style.animationDelay = Math.random()*.5+'s';
+    p.style.animationDuration = 1.8+Math.random()*1.5+'s';
+    box.appendChild(p);
+  }
+
+  setTimeout(() => box.replaceChildren(), 3500);
+}
+
+/* ==========================================
+   게임 종료 및 반복 실행
+========================================== */
+
+function end() {
+  mode = 'over';
+  finalScore = Math.floor(distance);
+  $('finalDistance').textContent = finalScore.toLocaleString();
+
+  const result = $('recordResult');
+
+  if (finalScore > CENTER_RECORD) {
+    result.className = 'resultBox';
+    result.textContent =
+      '🎉 잠실청소년센터의 1,500m 기록을 돌파했어요!';
+  } else if (finalScore === CENTER_RECORD) {
+    result.className = 'resultBox';
+    result.textContent =
+      '👏 잠실청소년센터의 1,500m 기록과 동점이에요!';
+  } else {
+    result.className = 'resultBox fail';
+    result.textContent =
+      '🐧 센터 기록까지 '+(CENTER_RECORD-finalScore).toLocaleString()+'m 남았어요!';
+  }
+
+  show('overPanel');
+}
+
+function frame(t) {
+  const dt = Math.min((t-last)/1000 || 0,.045);
+  last = t;
+
+  if (mode === 'playing' && $('exitOverlay').classList.contains('hidden')) {
+    speed = Math.min(10,1+distance/750);
+    const v = 210*speed;
+
+    world += v*dt;
+    distance += v*dt/10;
+    spawn += dt;
+
+    const interval = Math.max(.38,1.05/speed);
+
+    if (spawn >= interval) {
+      spawn = 0;
+      objects.push({
+        lane:Math.floor(Math.random()*3),
+        y:-40,
+        handled:false
+      });
+    }
+
+    for (const o of objects) {
+      const old = o.y;
+      o.y += v*dt;
+
+      if (!o.handled && old < H*.79+25 && o.y >= H*.79-25) {
+        o.handled = true;
+
+        if (o.lane === lane) {
+          end();
+          break;
+        }
+      }
+    }
+
+    objects = objects.filter(o => o.y < H+55);
+
+    if (mode === 'playing') {
+      // 1,500m 공식 기록 돌파는 별도 이펙트
+      if (!centerRecordPassed && distance > CENTER_RECORD) {
+        centerRecordPassed = true;
+        milestone(
+          '🎉 1,500m 돌파! 🎉',
+          '잠실청소년센터의 기록을 넘어섰어요!',
+          true
+        );
+      } else if (distance >= nextMilestone) {
+        // 1,500m 이펙트가 1,000m 이펙트보다 우선
+        if (nextMilestone !== 1500) {
+          milestone(
+            '❄️ '+nextMilestone.toLocaleString()+'m 돌파!',
+            '계속 달려보세요! 🐧'
+          );
+        }
+        nextMilestone += 1000;
+      }
+    }
+
+    if (milestoneUntil && t > milestoneUntil) {
+      $('milestone').classList.remove('show');
+      milestoneUntil = 0;
+    }
+
+    $('distance').textContent = Math.floor(distance).toLocaleString();
+    $('speed').textContent = speed.toFixed(1);
+  }
+
+  for (const s of snow) {
+    s.y += s.v*dt;
+    if (s.y > H) {
+      s.y = -5;
+      s.x = Math.random()*W;
+    }
+  }
+
+  draw();
+  requestAnimationFrame(frame);
+}
+
+requestAnimationFrame(frame);
+
+function finishHome() {
+  mode = 'start';
+  objects = [];
+  clearInterval(rankTimer);
+  $('exitOverlay').classList.add('hidden');
+  $('milestone').classList.remove('show');
+  $('confetti').replaceChildren();
+  show('startPanel');
+}
+
+function goHome() {
+  if (mode === 'playing') {
+    $('exitOverlay').classList.remove('hidden');
+    return;
+  }
+  finishHome();
+}
+
+$('stayBtn').onclick = () => $('exitOverlay').classList.add('hidden');
+$('exitBtn').onclick = finishHome;
+$('homeBtn').onclick = goHome;
+$('overHome').onclick = goHome;
+$('registerHome').onclick = goHome;
+$('startBtn').onclick = start;
+$('retryBtn').onclick = start;
+
+/* ==========================================
+   Google Sheets 서버 연동
+========================================== */
+
+// GitHub Pages는 google.script.run을 사용할 수 없으므로
+// Apps Script JSONP 조회 + 숨겨진 폼 POST + 등록ID 확인을 사용합니다.
+let jsonpCounter=0;
+function apiConfigured(){return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);}
+function jsonp(action,params={},timeout=12000){
+  return new Promise((resolve,reject)=>{
+    if(!apiConfigured())return reject(new Error('index.html의 API_URL에 Apps Script /exec 주소를 입력해 주세요.'));
+    const cb='penguinCb'+(++jsonpCounter),script=document.createElement('script');
+    let finished=false;
+    const cleanup=()=>{delete window[cb];script.remove();clearTimeout(timer);};
+    const timer=setTimeout(()=>{if(finished)return;finished=true;cleanup();reject(new Error('서버 응답 시간이 초과됐습니다. Apps Script 배포 공개 범위를 확인해 주세요.'));},timeout);
+    window[cb]=data=>{if(finished)return;finished=true;cleanup();if(data&&data.success)resolve(data);else reject(new Error(data&&data.error||'서버 응답 오류'));};
+    const url=new URL(API_URL);
+    url.searchParams.set('action',action);
+    url.searchParams.set('callback',cb);
+    url.searchParams.set('_',String(Date.now()));
+    Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,String(v)));
+    script.onerror=()=>{if(finished)return;finished=true;cleanup();reject(new Error('서버 연결이 차단됐습니다. 웹 앱 접근 권한을 확인해 주세요.'));};
+    script.src=url.toString();
+    document.head.appendChild(script);
+  });
+}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+function uniqueId(){
+  if(window.crypto&&crypto.randomUUID)return crypto.randomUUID().replace(/-/g,'');
+  return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
+}
+function submitViaForm(data){
+  const id='penguinFrame'+Date.now();
+  const frame=document.createElement('iframe');
+  frame.name=id;frame.style.display='none';
+  const form=document.createElement('form');
+  form.action=API_URL;form.method='POST';form.target=id;form.style.display='none';
+  Object.entries(data).forEach(([key,value])=>{
+    const input=document.createElement('input');
+    input.type='hidden';input.name=key;input.value=String(value);form.appendChild(input);
+  });
+  document.body.append(frame,form);
+  form.submit();
+  setTimeout(()=>{form.remove();frame.remove();},45000);
+}
+async function confirmSubmission(id){
+  for(let attempt=0;attempt<9;attempt++){
+    await sleep(attempt===0?1600:1800);
+    try{const result=await jsonp('status',{id},8500);if(result.found)return true;}catch(error){console.warn('등록 확인 재시도:',error);}
+  }
+  return false;
+}
+
+function isValidPhone(value) {
+  const digits = String(value||'').replace(/\D/g,'');
+  return /^01[016789]\d{7,8}$/.test(digits);
+}
+
+async function loadRanks() {
+  const list = $('rankList');
+  list.textContent = '랭킹 불러오는 중...';
+
+  try {
+    const result = await jsonp('ranking');
+    const rows = result.ranking;
+    list.replaceChildren();
+
+    if (!rows.length) {
+      list.textContent = '아직 등록된 기록이 없어요!';
+      return;
+    }
+
+    rows.forEach((r,i) => {
+      const el = document.createElement('div');
+      el.className = 'rankrow';
+
+      const left = document.createElement('span');
+      left.className = 'identity';
+      left.textContent =
+        (i+1)+'위  '+r.name+' · '+(r.phone||'***-****-****');
+
+      const right = document.createElement('span');
+      right.className = 'meters';
+      right.textContent = Number(r.distance).toLocaleString()+'m';
+
+      el.append(left,right);
+      list.appendChild(el);
+    });
+
+  } catch(error) {
+    list.textContent = '랭킹을 불러오지 못했습니다: '+error.message;
+  }
+}
+
+function openRanks(from) {
+  previousPanel = from;
+  show('rankPanel');
+  loadRanks();
+
+  clearInterval(rankTimer);
+  rankTimer = setInterval(() => {
+    if (!$('rankPanel').classList.contains('hidden')) {
+      loadRanks();
+    }
+  },10000);
+}
+
+$('showRanks').onclick = () => openRanks('startPanel');
+$('overRanks').onclick = () => openRanks('overPanel');
+$('refreshRanks').onclick = loadRanks;
+
+$('closeRanks').onclick = () => {
+  clearInterval(rankTimer);
+  show(previousPanel);
+};
+
+$('registerBtn').onclick = () => {
+  $('registerDistance').textContent = finalScore.toLocaleString();
+  $('registerStatus').textContent = '';
+  show('registerPanel');
+};
+
+$('backOver').onclick = () => show('overPanel');
+
+$('registerForm').onsubmit = async event => {
+  event.preventDefault();
+
+  const name = $('name').value.trim();
+  const phone = $('phone').value.replace(/\D/g,'');
+
+  if (!name || !isValidPhone(phone) || !$('consent').checked) {
+    $('registerStatus').textContent =
+      '이름, 올바른 전화번호, 동의 여부를 확인해 주세요.';
+    return;
+  }
+
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  $('registerStatus').textContent = '기록 등록 중...';
+
+  try {
+    if(!apiConfigured())throw new Error('API_URL 설정이 필요합니다.');
+    const submissionId=uniqueId();
+    submitViaForm({action:'submit',name,phone,distance:finalScore,consent:'yes',id:submissionId});
+    const confirmed=await confirmSubmission(submissionId);
+    if(!confirmed)throw new Error('서버에서 등록 여부를 확인하지 못했습니다. 중복 등록 전 관리자에게 구글 시트 기록을 확인해 주세요.');
+
+    $('registerStatus').textContent = '';
+    $('registerForm').reset();
+
+    // 등록 후 랭킹 표시, 공유는 종료 화면에서 가능
+    openRanks('overPanel');
+
+  } catch(error) {
+    $('registerStatus').textContent =
+      '등록 실패: '+error.message;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+/* ==========================================
+   카카오톡 도전장 공유
+========================================== */
+
+function challengeText() {
+  return [
+    '🐧 잠실청소년센터의 기록을 넘어라!',
+    '센터 공식 기록은 1,500m!',
+    '내 기록은 '+finalScore.toLocaleString()+'m!',
+    '너도 내 기록을 깰 수 있을까?',
+    '🎮 '+GAME_LINK
+  ].join('\n');
+}
+
+function initKakao(){
+  if(!window.Kakao||!Kakao.Share)throw new Error('카카오 SDK가 로드되지 않았습니다. Chrome 또는 Safari에서 게임을 열어 주세요.');
+  if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);
+}
+function shareChallenge(){
+  const status=$('shareStatus');status.textContent='';
+  try{
+    initKakao();
+    Kakao.Share.sendDefault({
+      objectType:'feed',
+      content:{
+        title:'🐧 잠실청소년센터의 기록을 넘어라!',
+        description:'센터 공식 기록 1,500m! 내 기록 '+finalScore.toLocaleString()+'m! 너도 도전해 봐!',
+        imageUrl:SHARE_IMAGE_URL,
+        link:{mobileWebUrl:GAME_LINK,webUrl:GAME_LINK}
+      },
+      buttons:[{title:'🎮 펭귄 슬라이드 도전하기',link:{mobileWebUrl:GAME_LINK,webUrl:GAME_LINK}}]
+    });
+  }catch(error){
+    console.error('카카오톡 공유 실패:',error);
+    status.textContent='카카오톡 공유창을 열지 못했습니다: '+(error.message||String(error))+'\n카카오 디벨로퍼스의 JavaScript SDK 도메인에 https://jamsilyouth-dot.github.io 를 등록했는지 확인해 주세요.';
+  }
+}
+
+$('kakaoBtn').addEventListener('click',shareChallenge);
+
+/* ==========================================
+   인스타그램 스토리 JPG 생성
+========================================== */
+
+function roundedRect(g,x,y,w,h,r) {
+  g.beginPath();
+  g.roundRect(x,y,w,h,r);
+  g.fill();
+}
+
+function makeStoryImage() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+
+  const g = canvas.getContext('2d');
+  const grad = g.createLinearGradient(0,0,0,1920);
+  grad.addColorStop(0,'#76c8f1');
+  grad.addColorStop(.6,'#d8f3ff');
+  grad.addColorStop(1,'#f2fbff');
+
+  g.fillStyle = grad;
+  g.fillRect(0,0,1080,1920);
+
+  // 눈송이 장식
+  for (let i=0;i<80;i++) {
+    const x = (i*137)%1080;
+    const y = (i*263)%1920;
+    g.fillStyle = 'rgba(255,255,255,.7)';
+    g.beginPath();
+    g.arc(x,y,4+(i%5),0,Math.PI*2);
+    g.fill();
+  }
+
+  g.fillStyle = '#fff';
+  roundedRect(g,65,135,950,1635,65);
+
+  g.textAlign = 'center';
+
+  g.fillStyle = '#4288b1';
+  g.font = 'bold 38px sans-serif';
+  g.fillText('잠실청소년센터 5차 홍보이벤트',540,260);
+
+  g.fillStyle = '#17628b';
+  g.font = 'bold 66px sans-serif';
+  g.fillText('펭귄 슬라이드',540,385);
+
+  g.font = 'bold 52px sans-serif';
+  g.fillText('잠실청소년센터의 기록을',540,475);
+  g.fillText('넘어라!',540,545);
+
+  // 펭귄 이모지
+  g.font = '270px "Apple Color Emoji","Segoe UI Emoji",sans-serif';
+  g.fillText('🐧',540,885);
+
+  g.fillStyle = '#668fa7';
+  g.font = 'bold 42px sans-serif';
+  g.fillText('MY RECORD',540,1030);
+
+  g.fillStyle = '#087fc0';
+  g.font = 'bold 126px sans-serif';
+  g.fillText(finalScore.toLocaleString()+'m',540,1190);
+
+  const passed = finalScore > CENTER_RECORD;
+
+  g.fillStyle = passed ? '#e6f8ed' : '#e6f3fc';
+  roundedRect(g,135,1250,810,160,30);
+
+  g.fillStyle = passed ? '#23734c' : '#397a9d';
+  g.font = 'bold 43px sans-serif';
+  g.fillText(
+    passed ? '🎉 센터 기록 돌파 성공!' :
+    '🐧 센터 기록에 도전 중!',
+    540,1325
+  );
+
+  g.font = '32px sans-serif';
+  g.fillText('센터 공식 기록 1,500m',540,1380);
+
+  g.fillStyle = '#17628b';
+  g.font = 'bold 52px sans-serif';
+  g.fillText('너도 내 기록을 넘어봐!',540,1530);
+
+  g.font = 'bold 49px sans-serif';
+  g.fillText('@jamsilyc',540,1650);
+
+  g.font = '29px sans-serif';
+  g.fillStyle = '#658ba0';
+  g.fillText('잠실청소년센터 공식 인스타그램',540,1710);
+
+  return canvas;
+}
+
+function createStoryJpg() {
+  const canvas = makeStoryImage();
+  const data = canvas.toDataURL('image/jpeg',.92);
+
+  if (!data.startsWith('data:image/jpeg;base64,')) {
+    throw new Error('JPEG 이미지 생성에 실패했습니다.');
+  }
+
+  return data;
+}
+
+function openStoryPanel() {
+  $('storyStatus').textContent = '';
+
+  try {
+    storyDataURL = createStoryJpg();
+    $('storyPreview').src = storyDataURL;
+    show('storyPanel');
+  } catch(error) {
+    $('shareStatus').textContent =
+      '스토리 이미지 생성 실패: '+error.message;
+  }
+}
+
+function downloadStoryJpg() {
+  const status = $('storyStatus');
+
+  try {
+    if (!storyDataURL) {
+      storyDataURL = createStoryJpg();
+    }
+
+    const link = document.createElement('a');
+    link.href = storyDataURL;
+    link.download =
+      '잠실청소년센터_펭귄슬라이드_'+finalScore+'m.jpg';
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    status.textContent =
+      'JPG 저장을 요청했어요. 저장되지 않으면 이미지 미리보기를 길게 눌러 저장하거나 외부 브라우저에서 다시 시도해 주세요.';
+
+  } catch(error) {
+    status.textContent =
+      '이미지 저장 실패: '+error.message;
+  }
+}
+
+function openInstagram() {
+  // 브라우저 및 OS가 허용하면 인스타그램 앱으로 전환됩니다.
+  // 앱이 열리지 않으면 웹사이트가 열릴 수 있습니다.
+  window.open(INSTAGRAM_URL,'_blank','noopener');
+}
+
+$('instagramBtn').onclick = openStoryPanel;
+$('saveStoryBtn').onclick = downloadStoryJpg;
+$('openInstagramBtn').onclick = openInstagram;
+$('backStory').onclick = () => show('overPanel');
+
+</script>
+</body>
+</html>
