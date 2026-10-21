@@ -8,7 +8,9 @@
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.4/kakao.min.js"></script>
 <style>
 :root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#163b58}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body,.shell,canvas#game{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none }
+button,a{ -webkit-tap-highlight-color:transparent }
 body{margin:0;background:linear-gradient(160deg,#d8f5ff,#7fc7e9);min-height:100dvh;display:flex;justify-content:center;align-items:center}
 .shell{width:min(100%,470px);height:100dvh;max-height:930px;min-height:580px;position:relative;overflow:hidden;background:#a5def4;box-shadow:0 8px 45px #16527744}
 canvas#game{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
