@@ -8,13 +8,11 @@
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.4/kakao.min.js"></script>
 <style>
 :root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#163b58}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body,.shell,canvas#game{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none }
-button,a{ -webkit-tap-highlight-color:transparent }
+*{box-sizing:border-box}
 body{margin:0;background:linear-gradient(160deg,#d8f5ff,#7fc7e9);min-height:100dvh;display:flex;justify-content:center;align-items:center}
 .shell{width:min(100%,470px);height:100dvh;max-height:930px;min-height:580px;position:relative;overflow:hidden;background:#a5def4;box-shadow:0 8px 45px #16527744}
-canvas#game{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
-.hud{z-index:5;position:absolute;top:env(safe-area-inset-top,12px);left:15px;right:15px;display:flex;justify-content:space-between;pointer-events:none}
+canvas#game{display:block;width:100%;height:100%;touch-action:none;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.hud{position:absolute;top:env(safe-area-inset-top,12px);left:15px;right:15px;display:flex;justify-content:space-between;pointer-events:none}
 .pill{background:#ffffffdf;border:2px solid #fff;border-radius:22px;padding:8px 14px;box-shadow:0 4px 12px #26749b25;font-weight:800}
 .pill small{display:block;font-size:10px;color:#658ba0}
 .homeBtn{position:absolute;top:calc(env(safe-area-inset-top,12px) + 62px);left:15px;z-index:5;border:2px solid white;background:#ffffffec;color:#17628b;border-radius:18px;padding:9px 13px;font-size:14px;font-weight:800;cursor:pointer}
@@ -51,7 +49,7 @@ canvas#game{display:block;width:100%;height:100%;touch-action:none;cursor:pointe
 .milestone.show{opacity:1;transform:scale(1)}
 .milestone.fade-out{opacity:0;transform:scale(.94);transition:opacity .65s ease,transform .65s ease}
 .controls{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:14px;right:14px;display:flex;justify-content:space-between;z-index:6;pointer-events:none}
-.moveBtn{pointer-events:auto;touch-action:manipulation;width:86px;height:74px;border-radius:23px;border:3px solid #fff;background:#137fc0eb;color:#fff;font-size:34px;font-weight:900;box-shadow:0 5px 0 #07547e;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.moveBtn{pointer-events:auto;touch-action:manipulation;width:84px;height:72px;border-radius:20px;border:4px solid #fff;background:linear-gradient(#3b9cf0,#1f6fd0);color:#fff;font-size:30px;font-weight:900;box-shadow:0 5px 0 #14509c,0 8px 14px #1a4f8a40;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 .moveBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #07547e}
 .controls.hidden{display:none}
 .milestone small{display:block;font-size:16px;margin-top:7px}
@@ -66,6 +64,10 @@ canvas#game{display:block;width:100%;height:100%;touch-action:none;cursor:pointe
 .exitActions .btn{flex:1}
 .storyPreview{width:100%;max-width:210px;aspect-ratio:9/16;object-fit:contain;border-radius:12px;border:2px solid #d1e7f0;background:#eaf8ff}
 a.inlineLink{color:#137fc0;font-size:13px}
+@media (min-width:600px){
+  .shell{border:10px solid #101820;border-radius:44px;height:min(100dvh - 24px,880px)}
+  .shell::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:22px;background:#101820;border-radius:0 0 16px 16px;z-index:30}
+}
 </style>
 </head>
 <body>
@@ -92,7 +94,7 @@ a.inlineLink{color:#137fc0;font-size:13px}
     </div>
   </div>
 
-
+  <div id="tip" class="topbar hidden" style="bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:5"><div class="tip" style="font-size:11px;white-space:nowrap;padding:7px 11px">화면 왼쪽 · 오른쪽 터치로 한 칸씩 이동</div></div>
 
   <div id="startPanel" class="panel">
     <div class="card">
@@ -226,13 +228,6 @@ const $ = id => document.getElementById(id);
 const c = $('game');
 const ctx = c.getContext('2d');
 
-// 뒷모습 걷기 애니메이션: PNG 두 장을 번갈아 표시
-const penguinFrames = ['penguin-left-step.png','penguin-right-step.png'].map(src => {
-  const img = new Image();
-  img.src = src;
-  return img;
-});
-
 let W = 400, H = 750, dpr = 1;
 let mode = 'start';
 let lane = 1;
@@ -251,6 +246,14 @@ let milestoneUntil = 0;
 let centerRecordPassed = false;
 let storyDataURL = '';
 
+// 같은 폴더의 PNG 2장을 번갈아 그리는 걷기 애니메이션
+const penguinSprites = ['penguin-left-step.png','penguin-right-step.png'].map(src => {
+  const img = new Image();
+  img.src = src;
+  return img;
+});
+
+
 /* ==========================================
    화면 제어
 ========================================== */
@@ -264,7 +267,7 @@ function show(id) {
   PANELS.forEach(key => {
     $(key).classList.toggle('hidden', key !== id);
   });
-  // 플레이 중에는 캔버스 전체를 터치 영역으로 사용합니다.
+  $('tip').classList.toggle('hidden', id !== '');
   $('homeBtn').classList.toggle('hidden', id !== '');
 }
 
@@ -302,7 +305,6 @@ function start() {
   milestoneUntil = 0;
   centerRecordPassed = false;
   $('milestone').classList.remove('show','special','fade-out');
-
   $('confetti').replaceChildren();
   $('distance').textContent = '0';
   $('speed').textContent = '1.0';
@@ -343,15 +345,16 @@ function move(dir) {
   }
 }
 
-// 캔버스에 직접 터치한 위치만 조작으로 인식합니다.
-// 홈 버튼과 다른 UI는 캔버스 위에 있으므로 터치 이벤트가 전달되지 않습니다.
-c.addEventListener('pointerdown', event => {
-  if (mode !== 'playing' || !$('exitOverlay').classList.contains('hidden')) return;
-  if (event.pointerType === 'mouse' && event.button !== 0) return;
-  event.preventDefault();
-  const bounds = c.getBoundingClientRect();
-  move(event.clientX - bounds.left < bounds.width / 2 ? -1 : 1);
-});
+// 게임 캔버스에서만 터치를 받아 한 번에 한 칸 이동합니다.
+// 홈 버튼과 다른 화면 UI는 캔버스 위 별도 요소이므로 터치 이동에서 제외됩니다.
+c.addEventListener('pointerdown', e => {
+  if (mode !== 'playing') return;
+  e.preventDefault();
+  const rect = c.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  move(x < rect.width / 2 ? -1 : 1);
+}, {passive:false});
+
 window.addEventListener('keydown', e => {
   if (['ArrowLeft','ArrowRight','a','d'].includes(e.key)) {
     e.preventDefault();
@@ -369,121 +372,287 @@ function road() {
   return {l:(W-rw)/2, w:rw, lw:rw/3};
 }
 
-// 포스터의 얼음길을 닮은 원근감 있는 2D 벡터 그래픽입니다.
-function polygon(points, fill, stroke=null, lineWidth=1) {
-  ctx.beginPath(); ctx.moveTo(points[0][0],points[0][1]);
-  for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
-  ctx.closePath();ctx.fillStyle=fill;ctx.fill();
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lineWidth;ctx.stroke();}
+/* ---------- 포스터 스타일 원근 렌더링 ---------- */
+const HORIZON = .27;      // 지평선 위치 (화면 높이 비율)
+const PENGUIN_Y = .79;    // 펭귄 위치 (충돌 판정과 동일)
+
+// 시간 진행도 t(0=먼 곳, 1=펭귄 위치) → 원근 진행도 f
+function persp(t){ return Math.pow(Math.max(0,Math.min(1.45,t)),1.65); }
+function objT(y){ return (y+40)/(H*PENGUIN_Y+40); }
+
+// 깊이 f에서의 도로 정보
+function roadAt(f){
+  const hy = H*HORIZON, py = H*PENGUIN_Y;
+  const y = hy + (py-hy)*f;
+  const topW = W*.055, botW = W*.80;
+  const w = topW + (botW-topW)*f;
+  return {y, w, l:(W-w)/2, lw:w/3, s:.055+.945*f};
 }
-function ellipse(x,y,rx,ry,fill){
-  ctx.beginPath();ctx.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,Math.PI*2);
-  ctx.fillStyle=fill;ctx.fill();
-}
-function mountain(x,y,size){
-  polygon([[x-size,y],[x,y-size*.83],[x+size,y]],'#8ac8e9');
-  polygon([[x-size*.4,y-size*.5],[x,y-size*.83],[x+size*.43,y-size*.48],[x+size*.1,y-size*.57],[x-size*.1,y-size*.51]],'#f5fdff');
-}
-function tree(x,y,size){
-  ctx.save();ctx.translate(x,y);ctx.scale(size,size);
-  ellipse(0,4,17,6,'#86c4df');
-  ctx.fillStyle='#795e51';ctx.fillRect(-3,-11,6,19);
-  polygon([[-21,-8],[0,-53],[21,-8]],'#207e94');
-  polygon([[-17,-24],[0,-63],[17,-24]],'#2a9caf');
-  polygon([[-11,-40],[0,-63],[11,-40],[4,-43],[-2,-39]],'#effbff');
-  polygon([[-18,-9],[0,-32],[18,-9],[7,-14],[-5,-10]],'#e6f8ff');
-  ctx.restore();
-}
-function iceRock(x,y,size=1){
-  ctx.save();ctx.translate(x,y);ctx.scale(size,size);
-  ellipse(0,17,28,9,'#3a8eac66');
-  polygon([[-24,18],[-18,-12],[-4,-26],[16,-20],[25,18]],'#268fc5','#d3f6ff',2);
-  polygon([[-18,-12],[-4,-26],[2,-5],[-8,17],[-24,18]],'#90e6ff');
-  polygon([[-4,-26],[16,-20],[25,18],[6,15],[2,-5]],'#54bce9');
-  polygon([[-16,-11],[-4,-26],[10,-21],[3,-13],[-4,-16]],'#e9fcff');
-  ctx.restore();
-}
-function penguinFallback(x,y,s=1){
-  const bob=mode==='playing'?Math.sin(world/38)*2:0;
-  ctx.save();ctx.translate(x,y+bob);ctx.scale(s,s);
-  ellipse(0,31,35,10,'#237eae55');
-  // 스카프와 날개, 몸통을 분리해 모바일 이모지 렌더링 차이를 제거합니다.
-  ellipse(-29,5,14,26,'#243e59');ellipse(29,5,14,26,'#243e59');
-  ellipse(0,1,32,39,'#263b58');
-  ellipse(0,10,25,27,'#fffefa');
-  ellipse(0,-22,30,28,'#243b58');
-  ellipse(-12,-16,14,18,'#fffefa');ellipse(12,-16,14,18,'#fffefa');
-  ellipse(-12,-17,4,5,'#122c48');ellipse(12,-17,4,5,'#122c48');
-  ellipse(-18,-7,6,4,'#f6b4bc');ellipse(18,-7,6,4,'#f6b4bc');
-  polygon([[-8,-11],[8,-11],[0,-2]],'#ffb63e');
-  // 포스터처럼 파란 스카프
-  polygon([[-26,0],[-8,3],[25,-1],[24,10],[-19,13]],'#0e8dd3');
-  polygon([[19,7],[32,11],[36,33],[23,29]],'#167ac1');
-  ellipse(-15,35,11,6,'#ffb333');ellipse(15,35,11,6,'#ffb333');
+
+function pine(x,y,s){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(s,s);
+  ctx.fillStyle = '#6b4a2f';
+  ctx.fillRect(-4,-6,8,14);
+  const tiers = [[0,-8,30,34],[0,-30,25,30],[0,-50,19,26]];
+  tiers.forEach(([cx,cy,w,h],i)=>{
+    ctx.fillStyle = i%2 ? '#2f7a55' : '#276b4a';
+    ctx.beginPath();
+    ctx.moveTo(cx,cy-h);
+    ctx.lineTo(cx-w,cy);
+    ctx.lineTo(cx+w,cy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#f7fdff';
+    ctx.beginPath();
+    ctx.moveTo(cx,cy-h);
+    ctx.lineTo(cx-w*.62,cy-h*.38);
+    ctx.quadraticCurveTo(cx-w*.2,cy-h*.5,cx,cy-h*.34);
+    ctx.quadraticCurveTo(cx+w*.2,cy-h*.5,cx+w*.62,cy-h*.38);
+    ctx.closePath();
+    ctx.fill();
+  });
   ctx.restore();
 }
 
-function penguin(x,y,s=1){
-  // 달리는 동안 왼발/오른발 이미지를 번갈아 표시. 정지 상태에서는 첫 번째 이미지.
-  const index = mode === 'playing' ? Math.floor(world / 35) % 2 : 0;
-  const img = penguinFrames[index];
-  if (!img.complete || img.naturalWidth === 0) {
+function iceBlock(x,y,s){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(s,s);
+  ctx.shadowColor = 'rgba(20,90,140,.28)';
+  ctx.shadowBlur = 10*s;
+  ctx.shadowOffsetY = 4*s;
+  // 몸통
+  ctx.fillStyle = '#8fd6f2';
+  ctx.beginPath();
+  ctx.moveTo(-34,22);
+  ctx.lineTo(-38,-6);
+  ctx.lineTo(-18,-34);
+  ctx.lineTo(14,-38);
+  ctx.lineTo(38,-8);
+  ctx.lineTo(35,22);
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  // 밝은 윗면
+  ctx.fillStyle = '#dff6ff';
+  ctx.beginPath();
+  ctx.moveTo(-38,-6);
+  ctx.lineTo(-18,-34);
+  ctx.lineTo(14,-38);
+  ctx.lineTo(38,-8);
+  ctx.lineTo(4,-2);
+  ctx.closePath();
+  ctx.fill();
+  // 어두운 옆면
+  ctx.fillStyle = '#5fb7de';
+  ctx.beginPath();
+  ctx.moveTo(4,-2);
+  ctx.lineTo(38,-8);
+  ctx.lineTo(35,22);
+  ctx.lineTo(-2,22);
+  ctx.closePath();
+  ctx.fill();
+  // 결정 라인
+  ctx.strokeStyle = '#ffffffcc';
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.moveTo(-18,-34); ctx.lineTo(-8,10);
+  ctx.moveTo(14,-38);  ctx.lineTo(4,-2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function penguinFallback(x,y,s=1) {
+  const k = Math.min(1.15, Math.max(.8, s));
+  const bob = mode === 'playing' ? Math.sin(world/38)*2 : 0;
+  const flap = mode === 'playing' ? Math.sin(world/30)*.12 : 0;
+  ctx.save();
+  ctx.translate(x,y+bob);
+  ctx.scale(k,k);
+
+  // 그림자 + 얼음 물보라
+  ctx.fillStyle = 'rgba(30,100,150,.22)';
+  ctx.beginPath(); ctx.ellipse(0,40,36,9,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffffffcc';
+  for (const [dx,dy,r] of [[-34,34,5],[-42,28,3.5],[34,34,5],[42,28,3.5]]){
+    ctx.beginPath(); ctx.arc(dx,dy,r,0,Math.PI*2); ctx.fill();
+  }
+  // 발
+  ctx.fillStyle = '#f5a623';
+  ctx.beginPath(); ctx.ellipse(-14,38,13,6,-.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(14,38,13,6,.15,0,Math.PI*2); ctx.fill();
+  // 날개(뒤)
+  ctx.fillStyle = '#1d2a3a';
+  ctx.save(); ctx.translate(-34,2); ctx.rotate(.45+flap);
+  ctx.beginPath(); ctx.ellipse(0,0,9,24,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(34,2); ctx.rotate(-.45-flap);
+  ctx.beginPath(); ctx.ellipse(0,0,9,24,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  // 몸통(뒷모습)
+  const body = ctx.createLinearGradient(0,-40,0,38);
+  body.addColorStop(0,'#2b3b52'); body.addColorStop(1,'#141d2b');
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(0,6,32,38,0,0,Math.PI*2); ctx.fill();
+  // 하이라이트
+  ctx.fillStyle = '#ffffff22';
+  ctx.beginPath(); ctx.ellipse(-12,-6,8,18,.3,0,Math.PI*2); ctx.fill();
+  // 머리
+  ctx.fillStyle = '#1d2a3a';
+  ctx.beginPath(); ctx.arc(0,-30,20,0,Math.PI*2); ctx.fill();
+  // 목도리
+  ctx.fillStyle = '#2f7de0';
+  ctx.beginPath(); ctx.ellipse(0,-14,23,8,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#4a96f0';
+  ctx.beginPath(); ctx.ellipse(0,-17,22,4,0,0,Math.PI*2); ctx.fill();
+  // 목도리 꼬리
+  ctx.fillStyle = '#2f7de0';
+  ctx.save(); ctx.translate(14,-10); ctx.rotate(.25+flap*2);
+  ctx.beginPath();
+  ctx.moveTo(0,0); ctx.lineTo(10,0); ctx.lineTo(16,24); ctx.lineTo(4,24); ctx.closePath();
+  ctx.fill(); ctx.restore();
+  ctx.restore();
+}
+
+function penguin(x,y,s=1) {
+  const step = Math.floor(world / 22) % 2;
+  const img = penguinSprites[step];
+  if (!img.complete || !img.naturalWidth) {
     penguinFallback(x,y,s);
     return;
   }
-  const bob = mode === 'playing' ? Math.sin(world / 35 * Math.PI) * 2 : 0;
-  const height = 100 * s;
-  const width = height * img.naturalWidth / img.naturalHeight;
+  const size = Math.min(W * .245, 108) * Math.max(.78, Math.min(1.15,s));
+  const h = size * img.naturalHeight / img.naturalWidth;
+  const bob = mode === 'playing' ? Math.sin(world / 22 * Math.PI) * 2 : 0;
   ctx.save();
-  ctx.fillStyle = 'rgba(16,74,112,.19)';
+  ctx.fillStyle = 'rgba(26,82,119,.18)';
   ctx.beginPath();
-  ctx.ellipse(x,y + height*.42,width*.38,8*s,0,0,Math.PI*2);
+  ctx.ellipse(x, y + 35, size * .32, 9, 0, 0, Math.PI*2);
   ctx.fill();
-  ctx.drawImage(img,x-width/2,y-height/2+bob,width,height);
+  ctx.drawImage(img, x-size/2, y-h*.66+bob, size, h);
   ctx.restore();
 }
 
-function draw(){
-  const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#54b7ec');sky.addColorStop(.55,'#a4e5ff');sky.addColorStop(1,'#ecfaff');
-  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-  // 배경 산과 구름
-  for(let i=0;i<6;i++)mountain(i*W/4-W*.15,H*.27,45+i%3*16);
-  for(let i=0;i<5;i++){
-    let x=(i*109+35)%W,y=H*.09+(i%3)*39;
-    ellipse(x,y,32,11,'#f7feffb8');ellipse(x-17,y-5,20,12,'#f7feffb8');
+function draw() {
+  const hy = H*HORIZON;
+
+  // 하늘
+  const sky = ctx.createLinearGradient(0,0,0,hy+20);
+  sky.addColorStop(0,'#5fb9e8');
+  sky.addColorStop(1,'#d9f4ff');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,hy+20);
+
+  // 먼 설산
+  const peaks = [[.08,.9],[.27,1.25],[.46,.8],[.66,1.35],[.86,1.0],[1.02,.85]];
+  for (const [px,ph] of peaks){
+    const bx = W*px, bh = H*.17*ph, bw = W*.26;
+    ctx.fillStyle = '#9cc9e6';
+    ctx.beginPath(); ctx.moveTo(bx,hy-bh); ctx.lineTo(bx-bw,hy+4); ctx.lineTo(bx+bw,hy+4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#f4fcff';
+    ctx.beginPath();
+    ctx.moveTo(bx,hy-bh);
+    ctx.lineTo(bx-bw*.32,hy-bh*.58);
+    ctx.lineTo(bx-bw*.12,hy-bh*.66);
+    ctx.lineTo(bx+bw*.06,hy-bh*.55);
+    ctx.lineTo(bx+bw*.3,hy-bh*.6);
+    ctx.closePath(); ctx.fill();
   }
-  // 눈길 가장자리와 얼음 바닥
-  const r=road();
-  polygon([[r.l-13,0],[r.l+r.w+13,0],[r.l+r.w+26,H],[r.l-26,H]],'#e8faff');
-  const ice=ctx.createLinearGradient(0,0,0,H);
-  ice.addColorStop(0,'#75c7eb');ice.addColorStop(.55,'#a1e2f7');ice.addColorStop(1,'#c4f4ff');
-  polygon([[r.l,0],[r.l+r.w,0],[r.l+r.w+7,H],[r.l-7,H]],ice);
-  // 움직이는 얼음 타일
-  const tile=85;
-  for(let y=((world*.65)%tile)-tile;y<H+tile;y+=tile){
-    ctx.strokeStyle='#e7fdff6e';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(r.l-5,y);ctx.lineTo(r.l+r.w+5,y);ctx.stroke();
+
+  // 눈밭
+  const ground = ctx.createLinearGradient(0,hy,0,H);
+  ground.addColorStop(0,'#eaf8ff');
+  ground.addColorStop(1,'#cfeefc');
+  ctx.fillStyle = ground;
+  ctx.fillRect(0,hy,W,H-hy);
+
+  // 얼음 도로 (사다리꼴)
+  const rt = roadAt(0), rb = roadAt(1.6);
+  const roadGrad = ctx.createLinearGradient(0,hy,0,H);
+  roadGrad.addColorStop(0,'#d6f1fb');
+  roadGrad.addColorStop(1,'#a9e0f5');
+  ctx.fillStyle = roadGrad;
+  ctx.beginPath();
+  ctx.moveTo(rt.l,rt.y); ctx.lineTo(rt.l+rt.w,rt.y);
+  ctx.lineTo(rb.l+rb.w,rb.y); ctx.lineTo(rb.l,rb.y);
+  ctx.closePath(); ctx.fill();
+
+  // 도로 가장자리 얼음 턱
+  ctx.strokeStyle = '#f7feff';
+  ctx.lineWidth = 4;
+  for (const side of [0,1]){
+    ctx.beginPath();
+    ctx.moveTo(side?rt.l+rt.w:rt.l, rt.y);
+    ctx.lineTo(side?rb.l+rb.w:rb.l, rb.y);
+    ctx.stroke();
   }
-  for(let i=1;i<3;i++){
-    let x=r.l+r.lw*i;
-    ctx.strokeStyle='#f1fdffae';ctx.lineWidth=2;ctx.setLineDash([24,18]);
-    ctx.lineDashOffset=-(world*.6)%42;
-    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.setLineDash([]);
+
+  // 체크무늬 타일 (스크롤)
+  const rows = 14, scroll = (world/260)%1;
+  for (let i=-1;i<rows;i++){
+    const t0 = Math.max(0,(i+scroll)/rows), t1 = Math.min(1.25,(i+1+scroll)/rows);
+    if (t1<=0) continue;
+    const a = roadAt(persp(t0)), b = roadAt(persp(t1));
+    for (let ln=0; ln<3; ln++){
+      if (((i+ln)%2+2)%2) continue;
+      ctx.fillStyle = '#ffffff40';
+      ctx.beginPath();
+      ctx.moveTo(a.l+a.lw*ln,a.y); ctx.lineTo(a.l+a.lw*(ln+1),a.y);
+      ctx.lineTo(b.l+b.lw*(ln+1),b.y); ctx.lineTo(b.l+b.lw*ln,b.y);
+      ctx.closePath(); ctx.fill();
+    }
   }
-  // 숲은 거리와 함께 아래로 스크롤
-  for(let i=0;i<20;i++){
-    const y=((i*105+world*.48)%(H+160))-80;
-    const side=i%2===0;
-    const x=side?r.l-23-(i%3)*12:r.l+r.w+23+(i%3)*12;
-    tree(x,y,.7+(y/H)*.35);
+
+  // 차선 점선
+  ctx.strokeStyle = '#ffffffb8';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([16,16]);
+  ctx.lineDashOffset = -world%32;
+  for (let i=1;i<3;i++){
+    ctx.beginPath();
+    ctx.moveTo(rt.l+rt.lw*i,rt.y);
+    ctx.lineTo(rb.l+rb.lw*i,rb.y);
+    ctx.stroke();
   }
-  for(const s of snow){ellipse(s.x,s.y,s.r,s.r,'#ffffffa8');}
-  for(const o of objects){
-    const x=r.l+r.lw*(o.lane+.5);
-    iceRock(x,o.y,Math.max(.65,Math.min(1.12,W/390)));
+  ctx.setLineDash([]);
+
+  // 양옆 소나무 + 깊이 순서대로 장애물을 섞어서 그리기
+  const items = [];
+  const treeGap = 7, treeScroll = (world/380)%1;
+  for (let i=0;i<treeGap*2;i++){
+    const t = (i+treeScroll*1)/(treeGap*2);
+    const tt = t*1.15;
+    if (tt<=.02) continue;
+    items.push({f:persp(tt), kind:'tree', side:(i%2?1:-1), idx:i});
   }
-  penguin(r.l+r.lw*(lane+.5),H*.79,Math.min(1.1,Math.max(.78,W/390)));
+  for (const o of objects){
+    const t = objT(o.y);
+    if (t<0) continue;
+    items.push({f:persp(t), kind:'ice', lane:o.lane});
+  }
+  items.sort((a,b)=>a.f-b.f);
+
+  for (const it of items){
+    const r = roadAt(it.f);
+    if (it.kind==='tree'){
+      const off = r.w/2 + 26*r.s + (it.idx%3)*18*r.s;
+      const x = W/2 + it.side*off;
+      pine(x, r.y, r.s*1.05*(W/400));
+    } else {
+      const x = r.l + r.lw*(it.lane+.5);
+      iceBlock(x, r.y, r.s*Math.min(1.22,W/340));
+    }
+  }
+
+  // 눈송이
+  for (const s of snow) {
+    ctx.fillStyle = '#ffffffaa';
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+  }
+
+  // 펭귄
+  const pr = roadAt(1);
+  penguin(pr.l+pr.lw*(lane+.5), H*PENGUIN_Y, Math.min(1.1,W/390));
 }
 
 /* ==========================================
@@ -534,7 +703,6 @@ function createConfetti(count=65) {
 
 function end() {
   mode = 'over';
-
   finalScore = Math.floor(distance);
   $('finalDistance').textContent = finalScore.toLocaleString();
 
@@ -648,7 +816,6 @@ function finishHome() {
   $('exitOverlay').classList.add('hidden');
   $('milestone').classList.remove('show','fade-out');
   $('confetti').replaceChildren();
-
   show('startPanel');
 }
 
