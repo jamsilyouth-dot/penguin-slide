@@ -222,7 +222,7 @@ const INSTAGRAM_URL = 'https://www.instagram.com/jamsilyc/';
 
 // 카카오톡 카드에 표시할 공개 접근 가능한 홍보 이미지
 // 정식 운영 전 실제 이미지 주소로 교체 권장
-const SHARE_IMAGE_URL = 'https://jamsilyouth-dot.github.io/penguin-slide/share-card.png';
+const SHARE_IMAGE_URL = 'https://jamsilyouth-dot.github.io/penguin-slide/share-card2.png';
 
 const $ = id => document.getElementById(id);
 const c = $('game');
@@ -355,6 +355,12 @@ window.addEventListener('keydown', e => {
 /* ==========================================
    게임 그리기
 ========================================== */
+
+// 세 개 레인의 도로 좌표 (누락된 함수 복구)
+function road() {
+  const rw = W * .78;
+  return {l:(W-rw)/2, w:rw, lw:rw/3};
+}
 
 function penguin(x,y,s=1) {
   const size = Math.min(72, Math.max(48, 64*s));
