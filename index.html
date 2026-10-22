@@ -703,13 +703,13 @@ function createConfetti(count=65) {
     const p = document.createElement('i');
     p.style.left = Math.random()*100+'%';
     p.style.background = colors[i%colors.length];
-    p.style.animationDelay = Math.random()*.5+'s';
-    p.style.animationDuration = 0.8+Math.random()*0.7+'s';
+    p.style.animationDelay = Math.random()*.2+'s';
+    p.style.animationDuration = 0.6+Math.random()*0.5+'s';
     box.appendChild(p);
   }
 
   const currentPieces = Array.from(box.children);
-  setTimeout(() => currentPieces.forEach(piece => piece.remove()), 1800);
+  setTimeout(() => currentPieces.forEach(piece => piece.remove()), 1400);
 }
 
 /* ==========================================
