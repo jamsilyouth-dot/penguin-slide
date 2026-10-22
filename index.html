@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>펭귄 슬라이드 | 잠실청소년센터</title>
+<title>펭귄도약 챌린지 | 잠실청소년센터</title>
 <meta name="game-version" content="20261021-touch-fix-2">
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.4/kakao.min.js"></script>
 <style>
@@ -174,7 +174,7 @@ a.inlineLink{color:#137fc0;font-size:13px}
     <div class="card">
       <div class="emoji">🏆</div>
       <h1>실시간 TOP 10</h1>
-      <p class="sub">잠실청소년센터 펭귄 슬라이드</p>
+      <p class="sub">잠실청소년센터 펭귄도약 챌린지</p>
       <div id="rankList"></div>
       <button id="refreshRanks" class="btn secondary">새로고침</button>
       <button id="closeRanks" class="btn">돌아가기</button>
@@ -1095,7 +1095,7 @@ function shareChallenge(){
         imageUrl:SHARE_IMAGE_URL,
         link:{mobileWebUrl:GAME_LINK,webUrl:GAME_LINK}
       },
-      buttons:[{title:'🎮 펭귄 슬라이드 도전하기',link:{mobileWebUrl:GAME_LINK,webUrl:GAME_LINK}}]
+      buttons:[{title:'🎮 펭귄도약 도전하기',link:{mobileWebUrl:GAME_LINK,webUrl:GAME_LINK}}]
     });
   }catch(error){
     console.error('카카오톡 공유 실패:',error);
@@ -1150,7 +1150,7 @@ function makeStoryImage() {
 
   g.fillStyle = '#17628b';
   g.font = 'bold 66px sans-serif';
-  g.fillText('펭귄 슬라이드',540,385);
+  g.fillText('펭귄도약 챌린지',540,385);
 
   g.font = 'bold 52px sans-serif';
   g.fillText('잠실청소년센터의 기록을',540,475);
@@ -1233,7 +1233,7 @@ function downloadStoryJpg() {
     const link = document.createElement('a');
     link.href = storyDataURL;
     link.download =
-      '잠실청소년센터_펭귄슬라이드_'+finalScore+'m.jpg';
+      '잠실청소년센터_펭귄도약 챌린지_'+finalScore+'m.jpg';
 
     document.body.appendChild(link);
     link.click();
