@@ -689,7 +689,7 @@ function milestone(text,subtitle,special=false) {
   el.classList.toggle('special',special);
   el.classList.add('show');
 
-  milestoneUntil = performance.now() + (special ? 1400 : 1100);
+  milestoneUntil = performance.now() + (special ? 500 : 300);
 
   createConfetti(special ? 65 : 15);
 }
